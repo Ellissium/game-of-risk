@@ -3,104 +3,50 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <cstring>
+#include <string>
 
-#define DELETE_KEY 8
+inline constexpr int DELETE_KEY = 8;
 
-using namespace sf;
-using namespace std;
-
-class textBox
+/**
+ * textBox - small UI helper for managing bet text and typed/buttons values.
+ * Provides methods to accept numeric keyboard input (optional),
+ * draw the centered bet amount above chip buttons, and update via chip presses.
+ */
+class betText
 {
 public:
-	Text balanceBet;
+	sf::Text balanceBet; // SFML text used to display the current bet amount
 	int betValue = 0;
-	string h;
+	int typedValue = 0; // value entered from keyboard (not from chip buttons)
+	int buttonsValue = 0; // value added via chip buttons
+	std::string h;
 
+	/**
+	 * Process text input events to update typedValue when the text entry is enabled.
+	 * Only numeric characters 0-9 are accepted. Backspace (DELETE_KEY) removes last digit.
+	 * Parameters:
+	 *  - input: SFML Event containing text input
+	 *  - Enable: whether text input is currently allowed
+	 *  - availableBalance: maximum allowed typed value (caps input)
+	 */
+	void input(sf::Event input, bool Enable, int availableBalance);
 
-	void input(Event input, bool Enable)
-	{
-		if (Enable == true)
-		{
-			int charTyped = input.text.unicode;
-			if (charTyped <= 57 && charTyped >= 48)
-			{
-				if (charTyped == 48)
-				{
-					add(0);
-				}
-				if (charTyped == 49)
-				{
-					add(1);
-				}
-				if (charTyped == 50)
-				{
-					add(2);
-				}
-				if (charTyped == 51)
-				{
-					add(3);
-				}
-				if (charTyped == 52)
-				{
-					add(4);
-				}
-				if (charTyped == 53)
-				{
-					add(5);
-				}
-				if (charTyped == 54)
-				{
-					add(6);
-				}
-				if (charTyped == 55)
-				{
-					add(7);
-				}
-				if (charTyped == 56)
-				{
-					add(8);
-				}
-				if (charTyped == 57)
-				{
-					add(9);
-				}
-			}
-			else if (betValue > 0 && charTyped == DELETE_KEY)
-			{
-				deleteLastChar();
-			}
-		}
-	}
+	/**
+	 * Draw the bet amount centered above the chips area.
+	 * This function receives a preloaded font and centers the text using local bounds.
+	 */
+	void drawBetBar(sf::RenderWindow& window, const sf::Font& font);
 
-	void drawBetBar(RenderWindow& window)
-	{
-		Font font;
-		font.loadFromFile("../Assets/fonts/Arial.ttf");
-		balanceBet.setFont(font);
-		balanceBet.setOutlineColor(Color::Black);
-		balanceBet.setOutlineThickness(2);
-		if (betValue < 10)
-		{
-			balanceBet.setPosition(950, 725);
-		}
-		else
-			balanceBet.setPosition(930, 725);
-		balanceBet.setCharacterSize(35);
-		h = to_string(betValue);
-		balanceBet.setString(h);
-		window.draw(balanceBet);
-	}
-	void addButton(int num)
-	{
-		betValue += num;
-	}
+	void addButton(int num);
 private:
-	void add(int value)
-	{
-		betValue = betValue * 10 + value;
-	}
-	void deleteLastChar()
-	{
-		betValue /= 10;
-	}
+	/**
+	 * Append a digit to the typed value, respecting the available balance cap.
+	 * Updates betValue = buttonsValue + typedValue.
+	 */
+	void add(int value, int availableBalance);
+
+	/**
+	 * Remove the last digit from typedValue and update betValue accordingly.
+	 */
+	void deleteLastChar();
 };

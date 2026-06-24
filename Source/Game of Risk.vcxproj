@@ -20,10 +20,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="betText.h" />
+    <ClInclude Include="Deck.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="menu.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="betText.cpp" />
+    <ClCompile Include="Deck.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="menu.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
