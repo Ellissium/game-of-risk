@@ -178,9 +178,9 @@ void resetRound(bool& betPlaced, bool& betBarEnabled, bool& firstRound, bool& ga
 	dealerTotal = 0;
 	playerCount = 0;
 	dealerCount = 0;
+	// hide result sprites off-screen
 	chanceText.setPosition(1200, 2000);
 	bareq.setPosition(2000, 1200);
-	// hide result sprites off-screen
 	lose.setPosition(2000, 1200);
 	win.setPosition(2000, 1200);
 	tie.setPosition(2000, 1200);
@@ -203,7 +203,19 @@ int runGame()
 	cardDeck.loadCardSprites();
 	cardDeck.shuffle();
 
+	// Create the main game window with title and fullscreen style
 	RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Game of Risk", Style::Titlebar | Style::Fullscreen);
+
+	// Load and set window icon
+	Image icon;
+	if (icon.loadFromFile("../Assets/images/ace-of-spades.png")) {
+		window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+	}
+	else {
+		std::cout << "Error: Could not load ace-of-spades.png" << std::endl;
+	}
+
+	// Display the initial menu before starting the game loop
 	menu(window);
 
 	SoundBuffer clickBuffer, chipHoverBuffer, chipClickBuffer, winBuffer, loseBuffer, tieBuffer, dealBuffer, moneyBuffer;
@@ -212,6 +224,7 @@ int runGame()
 	// Track previous hover state for chip buttons only
 	std::array<bool,6> prevHoverBet = {false,false,false,false,false,false};
 
+	// Load background music and set it to loop. If loading fails, print an error message.
 	if (!backgroundMusic.openFromFile("../Assets/audio/game-of-risk-ambient.ogg")) {
 		std::cout << "Error: Could not load game-of-risk-ambient.ogg" << std::endl;
 	}
@@ -219,17 +232,16 @@ int runGame()
 	backgroundMusic.setVolume(100.f);
 	backgroundMusic.play();
 
+	// Load sound effects for button clicks, chip interactions, and game results.
 	if (!clickBuffer.loadFromFile("../Assets/audio/button-click.wav")) {
 		std::cout << "Error loading button-click.wav" << std::endl;
 	}
-	// Placeholder chip sounds: replace paths with your actual chip sound files
 	if (!chipHoverBuffer.loadFromFile("../Assets/audio/poker-chips-hover.wav")) {
 		std::cout << "Warning: poker-chips-hover.wav not found" << std::endl;
 	}
 	if (!chipClickBuffer.loadFromFile("../Assets/audio/poker-chips-click.wav")) {
 		std::cout << "Warning: poker-chips-click.wav not found" << std::endl;
 	}
-	// Placeholder result/deal sounds
 	if (!winBuffer.loadFromFile("../Assets/audio/you-win.wav")) { std::cout << "Warning: win.wav not found" << std::endl; }
 	if (!loseBuffer.loadFromFile("../Assets/audio/you-lose.wav")) { std::cout << "Warning: lose.wav not found" << std::endl; }
 	if (!tieBuffer.loadFromFile("../Assets/audio/tie.wav")) { std::cout << "Warning: tie.wav not found" << std::endl; }
