@@ -46,7 +46,7 @@ double estimateStandWinProbability(const Deck& deckSnapshot,
 	// if player already busts, probability is zero
 	if (playerTotal > 21) return 0.0;
 
-		for (int t = 0; t < trials; ++t)
+	for (int t = 0; t < trials; ++t)
 	{
 		// shuffle a local copy of remaining cards
 		std::vector<Card> deckLocal = remaining;
@@ -56,11 +56,11 @@ double estimateStandWinProbability(const Deck& deckSnapshot,
 			// Only the dealer's first card is visible to the player.
 			// Use dealerHand[0] as the known card and draw the hidden card(s)
 			// from the remaining deck for simulation.
-			std::vector<Card> simDealer;
-			if (dealerCount > 0)
-				simDealer.push_back(dealerHand[0]);
-			// draw dealer's hidden card (simulate unknown card)
-			if (!deckLocal.empty()) { simDealer.push_back(deckLocal.back()); deckLocal.pop_back(); }
+		std::vector<Card> simDealer;
+		if (dealerCount > 0)
+			simDealer.push_back(dealerHand[0]);
+		// draw dealer's hidden card (simulate unknown card)
+		if (!deckLocal.empty()) { simDealer.push_back(deckLocal.back()); deckLocal.pop_back(); }
 
 		// dealer draws until total >= 17 (Ace handling inside computeHandTotal)
 		int dealerTotal = computeHandTotal(simDealer.data(), static_cast<int>(simDealer.size()));
@@ -222,7 +222,7 @@ int runGame()
 	Sound clickSound, chipHoverSound, chipClickSound, winSound, loseSound, tieSound, dealSound, moneySound;
 
 	// Track previous hover state for chip buttons only
-	std::array<bool,6> prevHoverBet = {false,false,false,false,false,false};
+	std::array<bool, 6> prevHoverBet = { false,false,false,false,false,false };
 
 	// Load background music and set it to loop. If loading fails, print an error message.
 	if (!backgroundMusic.openFromFile("../Assets/audio/game-of-risk-ambient.ogg")) {
@@ -273,6 +273,8 @@ int runGame()
 	tieSound.setVolume(80.f);
 	dealSound.setVolume(60.f);
 	moneySound.setVolume(85.f);
+
+	Clock exitClock;
 
 	betText cppbet;
 
@@ -395,7 +397,7 @@ int runGame()
 		{
 			if (finishClock.getElapsedTime().asSeconds() >= 3.f)
 			{
-					cppbet.betValue = 0;
+				cppbet.betValue = 0;
 				resetRound(betPlaced, betBarEnabled, firstRound, gameFinish, ready,
 					playerTotal, dealerTotal, playerCount, dealerCount, balance,
 					chanceText, bareq,
@@ -404,9 +406,9 @@ int runGame()
 
 				cardDeck.init();
 				cardDeck.shuffle();
-					// deck / state changed after reset -> recalc probability next frame
-					cachedProbability = 0.0;
-					probDirty = true;
+				// deck / state changed after reset -> recalc probability next frame
+				cachedProbability = 0.0;
+				probDirty = true;
 				continue;
 			}
 		}
@@ -465,7 +467,7 @@ int runGame()
 		for (int i = 0; i < 6; ++i)
 		{
 			// chips are interactive only while bet bar enabled and round not finished
-			if (!betBarEnabled || gameFinish) { betButtons[i].setScale(1.f,1.f); continue; }
+			if (!betBarEnabled || gameFinish) { betButtons[i].setScale(1.f, 1.f); continue; }
 			if (pressedTarget == i) continue;
 			if (betButtons[i].getGlobalBounds().contains(mposf))
 				betButtons[i].setScale(1.08f, 1.08f);
@@ -473,30 +475,31 @@ int runGame()
 				betButtons[i].setScale(1.f, 1.f);
 		}
 		// compute hover flags respecting allowed interaction states
-			bool hoverStart = startButton.getGlobalBounds().contains(mposf) && betBarEnabled && !betPlaced && !gameFinish && cppbet.betValue > 0;
-			bool hoverDouble = doubleButton.getGlobalBounds().contains(mposf) && betPlaced && !betBarEnabled && !gameFinish;
-			bool hoverHit = hitButton.getGlobalBounds().contains(mposf) && betPlaced && !betBarEnabled && !gameFinish;
-			bool hoverStand = standButton.getGlobalBounds().contains(mposf) && betPlaced && !betBarEnabled && !gameFinish;
-			// exit should be hoverable even during the round finish pause so user can exit
-			bool hoverExit = exitSprite.getGlobalBounds().contains(mposf);
+		bool hoverStart = startButton.getGlobalBounds().contains(mposf) && betBarEnabled && !betPlaced && !gameFinish && cppbet.betValue > 0;
+		bool hoverDouble = doubleButton.getGlobalBounds().contains(mposf) && betPlaced && !betBarEnabled && !gameFinish;
+		bool hoverHit = hitButton.getGlobalBounds().contains(mposf) && betPlaced && !betBarEnabled && !gameFinish;
+		bool hoverStand = standButton.getGlobalBounds().contains(mposf) && betPlaced && !betBarEnabled && !gameFinish;
+		// exit should be hoverable even during the round finish pause so user can exit
+		bool hoverExit = exitSprite.getGlobalBounds().contains(mposf);
 
-			// Hover sound logic removed for buttons (Start, Hit, Stand, Double, Exit)
-			// Only chip buttons play hover sound
+		// Hover sound logic removed for buttons (Start, Hit, Stand, Double, Exit)
+		// Only chip buttons play hover sound
 
-			// For chip buttons play hover sound only once when entering hover
-			for (int i = 0; i < 6; ++i)
-			{
-				if (!betBarEnabled || gameFinish) { prevHoverBet[i] = false; continue; }
-				if (betButtons[i].getGlobalBounds().contains(mposf)) {
-					if (!prevHoverBet[i]) chipHoverSound.play();
-					prevHoverBet[i] = true;
-				} else {
-					prevHoverBet[i] = false;
-				}
+		// For chip buttons play hover sound only once when entering hover
+		for (int i = 0; i < 6; ++i)
+		{
+			if (!betBarEnabled || gameFinish) { prevHoverBet[i] = false; continue; }
+			if (betButtons[i].getGlobalBounds().contains(mposf)) {
+				if (!prevHoverBet[i]) chipHoverSound.play();
+				prevHoverBet[i] = true;
 			}
+			else {
+				prevHoverBet[i] = false;
+			}
+		}
 
 		// glow color: use white for visibility on dark backgrounds
-		auto glowColor = [&](const Color& fallback) -> Color { return Color(255,255,255,160); };
+		auto glowColor = [&](const Color& fallback) -> Color { return Color(255, 255, 255, 160); };
 
 		Event event;
 		while (window.pollEvent(event))
@@ -540,16 +543,18 @@ int runGame()
 					else if (isClickInside(mouseX, mouseY, hitRect) && betPlaced && !betBarEnabled && !gameFinish) { pressedTarget = 8; }
 					else if (isClickInside(mouseX, mouseY, standRect) && betPlaced && !betBarEnabled && !gameFinish) { pressedTarget = 9; }
 					// exit allowed anytime (including during finish pause)
-					else if (isClickInside(mouseX, mouseY, exitRect)) { 
-						pressedTarget = 10; 
+					else if (isClickInside(mouseX, mouseY, exitRect)) {
+						pressedTarget = 10;
 						clickSound.play();
 						std::cout << "Exit clicked - playing sound and closing" << std::endl;
-						for (int i = 0; i < 20; ++i) {
-							window.display();
-							sf::sleep(sf::milliseconds(10));
+
+						if (exitClock.getElapsedTime().asSeconds() >= 0.25f) {
+							backgroundMusic.stop();
+							window.close();
+							break;
 						}
-						window.close();
-						break;
+
+
 					}
 				}
 
@@ -575,68 +580,68 @@ int runGame()
 					probDirty = true;
 				}
 				else if (isClickInside(mouseX, mouseY, hitRect) && !betBarEnabled && !gameFinish)
-						{
-							clickSound.play();
+				{
+					clickSound.play();
 
-						if (betPlaced && playerTotal < 21 && playerCount < MAX_HAND)
-							dealCard(cardDeck, playerHand.data(), playerCount, playerTotal);
+					if (betPlaced && playerTotal < 21 && playerCount < MAX_HAND)
+						dealCard(cardDeck, playerHand.data(), playerCount, playerTotal);
 
-						// recompute totals with proper Ace handling
-						playerTotal = computeHandTotal(playerHand.data(), playerCount);
+					// recompute totals with proper Ace handling
+					playerTotal = computeHandTotal(playerHand.data(), playerCount);
 
-						// player card changed -> recompute probability once (defer heavy work to post-event)
+					// player card changed -> recompute probability once (defer heavy work to post-event)
+					probDirty = true;
+
+					if (playerTotal > 21)
+					{
+						// player busted: show lose and auto-finish round
+						lose.setPosition(651, 345);
+						loseSound.play();
+						zero.setPosition(870, 1000);
+						gameFinish = true; finishClock.restart(); widthReal = 0.f;
+					}
+					else if (playerTotal == 21)
+					{
+						// Player reached natural 21: resolve immediately as a stand.
+						dealToDealer(cardDeck, dealerHand.data(), dealerCount, dealerTotal);
+						dealerTotal = computeHandTotal(dealerHand.data(), dealerCount);
+
+						// dealer cards changed -> probability result finalized
 						probDirty = true;
 
-						if (playerTotal > 21)
+						if (playerTotal > 21 || (dealerTotal <= 21 && dealerTotal > playerTotal))
 						{
-							// player busted: show lose and auto-finish round
-								lose.setPosition(651, 345);
-								loseSound.play();
-								zero.setPosition(870, 1000);
-								gameFinish = true; finishClock.restart(); widthReal = 0.f;
+							lose.setPosition(651, 345);
+							loseSound.play();
+							zero.setPosition(870, 1000);
+							gameFinish = true; finishClock.restart(); widthReal = 0.f;
 						}
-						else if (playerTotal == 21)
+						else if ((playerTotal <= 21 && playerTotal > dealerTotal) || dealerTotal > 21)
 						{
-							// Player reached natural 21: resolve immediately as a stand.
-							dealToDealer(cardDeck, dealerHand.data(), dealerCount, dealerTotal);
-							dealerTotal = computeHandTotal(dealerHand.data(), dealerCount);
-
-							// dealer cards changed -> probability result finalized
-							probDirty = true;
-
-							if (playerTotal > 21 || (dealerTotal <= 21 && dealerTotal > playerTotal))
-							{
-								lose.setPosition(651, 345);
-								loseSound.play();
-								zero.setPosition(870, 1000);
-								gameFinish = true; finishClock.restart(); widthReal = 0.f;
-							}
-							else if ((playerTotal <= 21 && playerTotal > dealerTotal) || dealerTotal > 21)
-							{
-								win.setPosition(651, 345);
-								winSound.play(); moneySound.play();
-								hundred.setPosition(870, 1000);
-								balance += 2 * cppbet.betValue;
-								gameFinish = true; finishClock.restart(); widthReal = 0.f;
-							}
-							else
-							{
-								tie.setPosition(651, 345);
-								tieSound.play();
-								fifty.setPosition(870, 1000);
-								balance += cppbet.betValue;
-								gameFinish = true; finishClock.restart(); widthReal = 0.f;
-							}
+							win.setPosition(651, 345);
+							winSound.play(); moneySound.play();
+							hundred.setPosition(870, 1000);
+							balance += 2 * cppbet.betValue;
+							gameFinish = true; finishClock.restart(); widthReal = 0.f;
 						}
 						else
 						{
-							// No immediate resolution: continue game normally
+							tie.setPosition(651, 345);
+							tieSound.play();
+							fifty.setPosition(870, 1000);
+							balance += cppbet.betValue;
+							gameFinish = true; finishClock.restart(); widthReal = 0.f;
+						}
+					}
+					else
+					{
+						// No immediate resolution: continue game normally
 
 					}
 				}
 				else if (isClickInside(mouseX, mouseY, standRect) && !betBarEnabled && !gameFinish)
-							{
-								clickSound.play();
+				{
+					clickSound.play();
 
 					dealToDealer(cardDeck, dealerHand.data(), dealerCount, dealerTotal);
 					dealerTotal = computeHandTotal(dealerHand.data(), dealerCount);
@@ -669,8 +674,8 @@ int runGame()
 					}
 				}
 				else if (isClickInside(mouseX, mouseY, doubleRect) && betPlaced && playerTotal < 21 && !gameFinish)
-							{
-								clickSound.play();
+				{
+					clickSound.play();
 
 					int stake = cppbet.betValue;
 					dealCard(cardDeck, playerHand.data(), playerCount, playerTotal);
@@ -719,37 +724,37 @@ int runGame()
 				// on mouse release, reset pressed animation (will be handled in MouseButtonReleased event)
 
 				if (betBarEnabled)
-							{
-								for (int i = 0; i < static_cast<int>(betRects.size()); ++i)
-								{
-									if (!isClickInside(mouseX, mouseY, betRects[i]))
-										continue;
+				{
+					for (int i = 0; i < static_cast<int>(betRects.size()); ++i)
+					{
+						if (!isClickInside(mouseX, mouseY, betRects[i]))
+							continue;
 
-									if (i == 0 && cppbet.betValue > 0)
-									{
-										balance += cppbet.betValue;
-										cppbet.betValue = 0;
-										cppbet.addButton(0);
-																chipClickSound.play();
-									}
-									else if (i == 5) // max
-									{
-										balance += cppbet.betValue;
-										cppbet.betValue = 0;
-										cppbet.addButton(balance);
-																balance = 0;
-																chipClickSound.play();
-									}
-									else if (betValues[i] > 0 && balance >= betValues[i])
-									{
-										balance -= betValues[i];
-										cppbet.addButton(betValues[i]);
-																// bet changed -> probability depends on player/dealer state; recompute
-																probDirty = true;
-																chipClickSound.play();
-									}
-								}
-							}
+						if (i == 0 && cppbet.betValue > 0)
+						{
+							balance += cppbet.betValue;
+							cppbet.betValue = 0;
+							cppbet.addButton(0);
+							chipClickSound.play();
+						}
+						else if (i == 5) // max
+						{
+							balance += cppbet.betValue;
+							cppbet.betValue = 0;
+							cppbet.addButton(balance);
+							balance = 0;
+							chipClickSound.play();
+						}
+						else if (betValues[i] > 0 && balance >= betValues[i])
+						{
+							balance -= betValues[i];
+							cppbet.addButton(betValues[i]);
+							// bet changed -> probability depends on player/dealer state; recompute
+							probDirty = true;
+							chipClickSound.play();
+						}
+					}
+				}
 			}
 			else if (event.type == Event::MouseButtonReleased && event.mouseButton.button == Mouse::Left)
 			{
@@ -781,24 +786,24 @@ int runGame()
 				if (hoverStart && pressedTarget != 6)
 				{
 					FloatRect fb = startButton.getGlobalBounds();
-					Color col = glowColor(Color(255,255,255,160));
+					Color col = glowColor(Color(255, 255, 255, 160));
 					for (int k = 2; k >= 0; --k)
 					{
 						RectangleShape glow(Vector2f(fb.width + 12.f + k * 8.f, fb.height + 12.f + k * 8.f));
-					glow.setPosition(fb.left - 6.f - k*4.f, fb.top - 6.f - k*4.f);
-					glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60/(k+1))));
-					window.draw(glow);
-				}
-			}
-						window.draw(startButton);
+						glow.setPosition(fb.left - 6.f - k * 4.f, fb.top - 6.f - k * 4.f);
+						glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60 / (k + 1))));
+						window.draw(glow);
 					}
-					zero.setPosition(2000, 1200);
-					hundred.setPosition(2000, 1200);
-					fifty.setPosition(2000, 1200);
 				}
-			else
-			{
-				window.draw(background2);
+				window.draw(startButton);
+			}
+			zero.setPosition(2000, 1200);
+			hundred.setPosition(2000, 1200);
+			fifty.setPosition(2000, 1200);
+		}
+		else
+		{
+			window.draw(background2);
 			chanceWin.setPosition(870, 1000);
 			window.draw(chanceWin);
 			doubleButton.setPosition(1290, 1000);
@@ -806,12 +811,12 @@ int runGame()
 			if (hoverDouble && pressedTarget != 7)
 			{
 				FloatRect fb = doubleButton.getGlobalBounds();
-				Color col = glowColor(Color(255,255,255,160));
+				Color col = glowColor(Color(255, 255, 255, 160));
 				for (int k = 2; k >= 0; --k)
 				{
-					RectangleShape glow(Vector2f(fb.width + 12.f + k*8.f, fb.height + 12.f + k*8.f));
-					glow.setPosition(fb.left - 6.f - k*4.f, fb.top - 6.f - k*4.f);
-					glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60/(k+1))));
+					RectangleShape glow(Vector2f(fb.width + 12.f + k * 8.f, fb.height + 12.f + k * 8.f));
+					glow.setPosition(fb.left - 6.f - k * 4.f, fb.top - 6.f - k * 4.f);
+					glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60 / (k + 1))));
 					window.draw(glow);
 				}
 			}
@@ -820,12 +825,12 @@ int runGame()
 			if (hoverHit && pressedTarget != 8)
 			{
 				FloatRect fb = hitButton.getGlobalBounds();
-				Color col = glowColor(Color(255,255,255,160));
+				Color col = glowColor(Color(255, 255, 255, 160));
 				for (int k = 2; k >= 0; --k)
 				{
-					RectangleShape glow(Vector2f(fb.width + 12.f + k*8.f, fb.height + 12.f + k*8.f));
-					glow.setPosition(fb.left - 6.f - k*4.f, fb.top - 6.f - k*4.f);
-					glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60/(k+1))));
+					RectangleShape glow(Vector2f(fb.width + 12.f + k * 8.f, fb.height + 12.f + k * 8.f));
+					glow.setPosition(fb.left - 6.f - k * 4.f, fb.top - 6.f - k * 4.f);
+					glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60 / (k + 1))));
 					window.draw(glow);
 				}
 			}
@@ -834,12 +839,12 @@ int runGame()
 			if (hoverStand && pressedTarget != 9)
 			{
 				FloatRect fb = standButton.getGlobalBounds();
-				Color col = glowColor(Color(255,255,255,160));
+				Color col = glowColor(Color(255, 255, 255, 160));
 				for (int k = 2; k >= 0; --k)
 				{
-					RectangleShape glow(Vector2f(fb.width + 12.f + k*8.f, fb.height + 12.f + k*8.f));
-					glow.setPosition(fb.left - 6.f - k*4.f, fb.top - 6.f - k*4.f);
-					glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60/(k+1))));
+					RectangleShape glow(Vector2f(fb.width + 12.f + k * 8.f, fb.height + 12.f + k * 8.f));
+					glow.setPosition(fb.left - 6.f - k * 4.f, fb.top - 6.f - k * 4.f);
+					glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60 / (k + 1))));
 					window.draw(glow);
 				}
 			}
@@ -852,12 +857,12 @@ int runGame()
 		if (hoverExit && pressedTarget != 10)
 		{
 			FloatRect fb = exitSprite.getGlobalBounds();
-			Color col = glowColor(Color(255,255,255,160));
+			Color col = glowColor(Color(255, 255, 255, 160));
 			for (int k = 2; k >= 0; --k)
 			{
-				RectangleShape glow(Vector2f(fb.width + 12.f + k*8.f, fb.height + 12.f + k*8.f));
-				glow.setPosition(fb.left - 6.f - k*4.f, fb.top - 6.f - k*4.f);
-				glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60/(k+1))));
+				RectangleShape glow(Vector2f(fb.width + 12.f + k * 8.f, fb.height + 12.f + k * 8.f));
+				glow.setPosition(fb.left - 6.f - k * 4.f, fb.top - 6.f - k * 4.f);
+				glow.setFillColor(Color(col.r, col.g, col.b, static_cast<Uint8>(60 / (k + 1))));
 				window.draw(glow);
 			}
 		}
@@ -885,34 +890,34 @@ int runGame()
 			{
 				// Dealer also has blackjack -> push (tie)
 				if (dealerCount == 2 && dealerTotal == 21)
-										{
-											tie.setPosition(651, 345);
-											tieSound.play();
-											fifty.setPosition(870, 1000); // show tie indicator
-											balance += cppbet.betValue; // return stake
-											gameFinish = true; finishClock.restart(); widthReal = 0.f;
-										}
-										else
-										{
-													// Player has blackjack: pay 3:2
-													win.setPosition(651, 345);
-													winSound.play(); moneySound.play();
-													hundred.setPosition(870, 1000);
-													int payout = (cppbet.betValue * 5) / 2; // 2.5x total return
-													balance += payout;
-													gameFinish = true; finishClock.restart(); widthReal = 0.f;
-												}
-											}
-											// Check for three sevens (777) jackpot
-											else if (hasThreeSevens(playerHand.data(), playerCount))
-											{
-												win.setPosition(651, 345);
-												winSound.play(); moneySound.play();
-												hundred.setPosition(870, 1000);
-												int jackpot = cppbet.betValue * 3; // 3:1 payout for 777
-												balance += cppbet.betValue + jackpot;
-												gameFinish = true; finishClock.restart(); widthReal = 0.f;
-											}
+				{
+					tie.setPosition(651, 345);
+					tieSound.play();
+					fifty.setPosition(870, 1000); // show tie indicator
+					balance += cppbet.betValue; // return stake
+					gameFinish = true; finishClock.restart(); widthReal = 0.f;
+				}
+				else
+				{
+					// Player has blackjack: pay 3:2
+					win.setPosition(651, 345);
+					winSound.play(); moneySound.play();
+					hundred.setPosition(870, 1000);
+					int payout = (cppbet.betValue * 5) / 2; // 2.5x total return
+					balance += payout;
+					gameFinish = true; finishClock.restart(); widthReal = 0.f;
+				}
+			}
+			// Check for three sevens (777) jackpot
+			else if (hasThreeSevens(playerHand.data(), playerCount))
+			{
+				win.setPosition(651, 345);
+				winSound.play(); moneySound.play();
+				hundred.setPosition(870, 1000);
+				int jackpot = cppbet.betValue * 3; // 3:1 payout for 777
+				balance += cppbet.betValue + jackpot;
+				gameFinish = true; finishClock.restart(); widthReal = 0.f;
+			}
 		}
 
 		Text balanceText;
@@ -920,7 +925,7 @@ int runGame()
 		balanceText.setOutlineColor(Color::Black);
 		balanceText.setOutlineThickness(2);
 		balanceText.setString("Balance: " + std::to_string(balance));
-	balanceText.setPosition(30.f, 30.f);
+		balanceText.setPosition(30.f, 30.f);
 		balanceText.setCharacterSize(45);
 		window.draw(balanceText);
 
