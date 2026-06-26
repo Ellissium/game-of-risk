@@ -8,45 +8,45 @@
 inline constexpr int DELETE_KEY = 8;
 
 /**
- * textBox - small UI helper for managing bet text and typed/buttons values.
- * Provides methods to accept numeric keyboard input (optional),
- * draw the centered bet amount above chip buttons, and update via chip presses.
+ * betText - manages bet display and text input for chip/keyboard bet entry.
+ * Tracks bet value from both chip buttons (buttonsValue) and keyboard input (typedValue).
+ * Provides input processing and centered text rendering above the chips area.
  */
 class betText
 {
 public:
-	sf::Text balanceBet; // SFML text used to display the current bet amount
+	// ====================================================================
+	// Public state
+	// ====================================================================
+	sf::Text balanceBet;
 	int betValue = 0;
-	int typedValue = 0; // value entered from keyboard (not from chip buttons)
-	int buttonsValue = 0; // value added via chip buttons
+	int typedValue = 0;
+	int buttonsValue = 0;
 	std::string h;
 
-	/**
-	 * Process text input events to update typedValue when the text entry is enabled.
-	 * Only numeric characters 0-9 are accepted. Backspace (DELETE_KEY) removes last digit.
-	 * Parameters:
-	 *  - input: SFML Event containing text input
-	 *  - Enable: whether text input is currently allowed
-	 *  - availableBalance: maximum allowed typed value (caps input)
-	 */
+	// ====================================================================
+	// Public interface
+	// ====================================================================
+
+	// input - process text input events (keyboard digits and backspace).
+	// Enable: whether input is currently allowed.
+	// availableBalance: maximum bet cap.
 	void input(sf::Event input, bool Enable, int availableBalance);
 
-	/**
-	 * Draw the bet amount centered above the chips area.
-	 * This function receives a preloaded font and centers the text using local bounds.
-	 */
+	// drawBetBar - render the current bet amount as centered text.
 	void drawBetBar(sf::RenderWindow& window, const sf::Font& font);
 
+	// addButton - increment bet when a chip button is pressed.
 	void addButton(int num);
+
 private:
-	/**
-	 * Append a digit to the typed value, respecting the available balance cap.
-	 * Updates betValue = buttonsValue + typedValue.
-	 */
+	// ====================================================================
+	// Private helpers
+	// ====================================================================
+
+	// add - append a digit to the typed value, respecting the balance cap.
 	void add(int value, int availableBalance);
 
-	/**
-	 * Remove the last digit from typedValue and update betValue accordingly.
-	 */
+	// deleteLastChar - remove the last digit from typed value.
 	void deleteLastChar();
 };

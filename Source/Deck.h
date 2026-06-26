@@ -1,8 +1,4 @@
 #pragma once
-// Deck.h - part of Game of Risk
-// Manages a standard 52-card deck, textures and sprites.
-// Public API: init(), shuffle(), draw(), loadCardSprites(), getSprite(rank,suit)
-// Adds utilities to access card textures and sprites for rendering.
 
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -11,65 +7,73 @@
 #include <string>
 
 /**
- * Deck - manages a standard 52-card deck, associated textures and sprites.
+ * Deck - manages a standard 52-card deck with associated textures and sprites.
+ * 
  * Responsibilities:
- *  - initialize and shuffle the in-memory card list
- *  - provide draw() to consume cards
- *  - load textures for each card image and supply sprites for rendering
+ *  - Initialize and shuffle card list
+ *  - Provide draw() to consume cards during gameplay
+ *  - Load and cache card textures/sprites for efficient rendering
  *
- * The class keeps texture and sprite arrays indexed by rank/suit to avoid
- * reloading images frequently.
+ * Public API:
+ *  - init(): fill deck with 52 cards
+ *  - shuffle(): randomize card order
+ *  - draw(): remove and return top card
+ *  - loadCardSprites(): load textures from disk
+ *  - getSprite(rank, suit): return sprite for rendering
+ *  - getCardsSnapshot(): return remaining cards for simulation
  */
-// Public API: init(), shuffle(), draw(), loadCardSprites(), getSprite(rank,suit)
 class Deck
 {
 public:
-	/**
-	 * Construct a Deck object and initialize RNG and lookup names.
-	 */
-	Deck();
+	// ====================================================================
+	// Card representation
+	// ====================================================================
 
-	/**
-	 * Fill the internal card vector with a canonical 52-card sequence.
-	 * After calling init(), shuffle() should be used to randomize order.
-	 */
-	void init();
-
-	/**
-	 * Randomize order of remaining cards using the stored RNG.
-	 */
-	void shuffle();
-
-	/**
-	 * Simple POD representing a single card by rank (1..13) and suit (1..4).
-	 */
+	// Simple POD representing a single card by rank (1..13) and suit (1..4).
 	struct Card { int rank; int suit; };
 
-	/**
-	 * Remove and return the top card from the deck. Caller must ensure
-	 * the deck is not empty before calling.
-	 */
+	// ====================================================================
+	// Initialization and lifecycle
+	// ====================================================================
+
+	// Deck() - construct and initialize RNG and card name lookups.
+	Deck();
+
+	// init() - fill the deck with a canonical 52-card sequence.
+	void init();
+
+	// shuffle() - randomize remaining card order using RNG.
+	void shuffle();
+
+	// ====================================================================
+	// Card operations
+	// ====================================================================
+
+	// draw() - remove and return the top card from the deck.
 	Card draw();
 
-	/**
-	 * Load textures from disk and initialize sprites for each rank/suit.
-	 * Expects image files at images/<rank>_of_<suit>.png matching rankNames/suitNames.
-	 */
+	// ====================================================================
+	// Sprite and texture management
+	// ====================================================================
+
+	// loadCardSprites() - load card image textures from disk and initialize sprites.
+	// Expects files at images/<rank>_of_<suit>.png
 	void loadCardSprites();
 
-	/**
-	 * Return a prepared Sprite for rendering the specified card.
-	 * The returned Sprite references an internally stored Texture.
-	 */
+	// getSprite(rank, suit) - return a prepared sprite for rendering a card.
 	sf::Sprite getSprite(int rank, int suit) const;
 
-	/**
-	 * Return a copy of the remaining (not-yet-drawn) cards. This is a
-	 * snapshot useful for simulation or AI; it does not modify internal state.
-	 */
+	// ====================================================================
+	// Snapshot for simulations
+	// ====================================================================
+
+	// getCardsSnapshot() - return copy of remaining cards (does not modify deck).
 	std::vector<Card> getCardsSnapshot() const;
 
 private:
+	// ====================================================================
+	// Internal state
+	// ====================================================================
 	std::vector<Card> cards;
 	std::mt19937 rng;
 	std::array<std::array<sf::Texture, 4>, 14> cardTextures;
